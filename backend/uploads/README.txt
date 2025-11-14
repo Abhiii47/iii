@@ -1,0 +1,1 @@
+This folder stores uploaded images. In production use S3 or equivalent.
