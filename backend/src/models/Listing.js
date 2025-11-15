@@ -1,14 +1,23 @@
+// models/Listing.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const ListingSchema = new Schema({
+const listingSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  address: { type: String },
-  lat: { type: Number, required: true },
-  lng: { type: Number, required: true },
-  imageUrl: { type: String },
-  owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, default: Date.now }
+  description: String,
+  address: String,
+  price: Number,
+  images: [String],           // store URLs like /uploads/...
+  imageUrl: String,           // fallback single image path
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  hostName: String,
+  lat: Number,
+  lng: Number,
+  type: String,               // 'room' | 'food' | 'both' | free text
+  tags: [String],
+  amenities: [String],
+  createdAt: { type: Date, default: Date.now },
+  published: { type: Boolean, default: true }
 });
 
-module.exports = mongoose.model('Listing', ListingSchema);
+module.exports = mongoose.model('Listing', listingSchema);
+
