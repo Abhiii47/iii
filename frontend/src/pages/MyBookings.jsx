@@ -6,9 +6,14 @@ export default function MyBookings({ user }) {
   const [bookings, setBookings] = useState([])
 
   useEffect(() => {
-    if (user) {
-      API.get('/bookings/user').then(res=>setBookings(res.data)).catch(()=>{})
+    async function load() {
+      if (!user) return
+      try {
+        const res = await API.get('/bookings/user').catch(()=>API.get('/bookings'))
+        setBookings(res.data ?? res)
+      } catch {}
     }
+    load()
   }, [user])
 
   return (
@@ -18,9 +23,9 @@ export default function MyBookings({ user }) {
         {bookings.length===0 && <div className="text-sm text-gray-500">No bookings yet.</div>}
         <ul className="space-y-3">
           {bookings.map(b => (
-            <li key={b._id} className="p-3 border rounded">
-              <div className="font-medium">{b.listingTitle}</div>
-              <div className="text-sm text-gray-500">From: {b.fromDate} To: {b.toDate}</div>
+            <li key={b._id || b.id} className="p-3 border rounded">
+              <div className="font-medium">{b.listingTitle || b.listing_title}</div>
+              <div className="text-sm text-gray-500">From: {b.start_date || b.fromDate} To: {b.end_date || b.toDate}</div>
               <div>Status: <strong>{b.status}</strong></div>
             </li>
           ))}
