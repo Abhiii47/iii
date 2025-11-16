@@ -5,7 +5,7 @@ import LottieEmpty from './LottieEmpty'
 
 const containerStyle = { width: '100%', height: '100%', minHeight: '280px' }
 
-export default function GoogleMapComponent({ listings = [] }) {
+export default function GoogleMapComponent({ listings = [], center = null, zoom = null }) {
   // API key from environment variable - Vite will replace this at build time
   // The key is NOT exposed in source code, only in the built bundle (which is normal for frontend)
   // Google Maps API keys are meant to be client-side but should have HTTP referrer restrictions
@@ -44,9 +44,21 @@ export default function GoogleMapComponent({ listings = [] }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
+    libraries: ['places'] // Load Places library for LocationSearch to use
   })
 
   const defaultCenter = useMemo(() => ({ lat: 19.075983, lng: 72.877655 }), [])
+  const mapCenter = useMemo(() => {
+    if (center) return center
+    if (listings.length > 0) return { lat: listings[0].lat, lng: listings[0].lng }
+    return defaultCenter
+  }, [center, listings, defaultCenter])
+  
+  const mapZoom = useMemo(() => {
+    if (zoom !== null) return zoom
+    return listings.length > 0 ? 12 : 10
+  }, [zoom, listings])
+  
   const [selected, setSelected] = useState(null)
   const onMarkerClick = useCallback((listing) => setSelected(listing), [])
   const onMapClick = useCallback(() => setSelected(null), [])
@@ -89,10 +101,21 @@ export default function GoogleMapComponent({ listings = [] }) {
     <div className="w-full h-72 md:h-80 rounded-lg overflow-hidden">
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={listings.length ? { lat: listings[0].lat, lng: listings[0].lng } : defaultCenter}
-        zoom={12}
+        center={mapCenter}
+        zoom={mapZoom}
         onClick={onMapClick}
-        options={{ streetViewControl:false, mapTypeControl:false, fullscreenControl:false }}
+        options={{ 
+          streetViewControl: false, 
+          mapTypeControl: false, 
+          fullscreenControl: false,
+          styles: [
+            {
+              featureType: "poi",
+              elementType: "labels",
+              stylers: [{ visibility: "off" }]
+            }
+          ]
+        }}
       >
         {listings.map((l, i) => (
           <Marker key={i} position={{ lat: Number(l.lat), lng: Number(l.lng) }} onClick={() => onMarkerClick(l)} />

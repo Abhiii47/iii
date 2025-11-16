@@ -28,9 +28,9 @@ export default function App(){
 
   // pass user and logout handler into Navbar
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative overflow-x-hidden">
       <Navbar user={user} onLogout={handleLogout} />
-      <main className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+      <main className="max-w-7xl mx-auto px-6 py-8 relative z-10 scroll-smooth">
         <Routes>
           <Route path="/" element={<Home user={user} />} />
           <Route path="/listings" element={<Listings user={user} />} />

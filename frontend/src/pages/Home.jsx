@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import API from '../services/api'
 import ListingCard from '../components/ListingCard'
 import GoogleMapComponent from '../components/GoogleMap'
@@ -8,13 +8,29 @@ import LottieEmpty from '../components/LottieEmpty'
 import FilterDrawer from '../components/FilterDrawer'
 import BookingModal from '../components/BookingModal'
 import Hero from '../components/Hero'
-import { FiFilter } from 'react-icons/fi'
+import LocationSearch from '../components/LocationSearch'
+import { FiFilter, FiMapPin } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
+
+// Helper function to calculate distance between two coordinates (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371 // Radius of the Earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c // Distance in km
+}
 
 export default function Home({ user }) {
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState(null)
+  const [searchRadius, setSearchRadius] = useState(10) // km
 
   // modal state for booking
   const [modalOpen, setModalOpen] = useState(false)
@@ -60,55 +76,154 @@ export default function Home({ user }) {
     }
   }
 
-  // Separate listings by type - more precise filtering
-  const roomListings = listings.filter(l => {
-    const listingType = (l.type || '').toLowerCase().trim()
-    // Only include if explicitly a room/stay type
-    return listingType === 'room' || 
-           listingType === 'stay' || 
-           listingType.includes('room') ||
-           listingType.includes('stay') ||
-           (listingType === '' && !l.type) // If no type set, default to room
-  })
-  
-  const foodListings = listings.filter(l => {
-    const listingType = (l.type || '').toLowerCase().trim()
-    // Only include if explicitly a food type
-    return listingType === 'food' || 
-           listingType === 'mess' || 
-           listingType === 'tiffin' ||
-           listingType.includes('food') ||
-           listingType.includes('mess') ||
-           listingType.includes('tiffin')
-  })
 
-  // map points for GoogleMapComponent
-  const mapPoints = (listings || []).map(l => ({
-    lat: Number(l.lat || l.latitude || 0),
-    lng: Number(l.lng || l.longitude || l.lon || 0),
-    title: l.title,
-    price: l.price
-  }))
+  // Filter listings by location if a location is selected
+  const filteredListings = useMemo(() => {
+    if (!selectedLocation) return listings
+    
+    return listings.filter(listing => {
+      const listingLat = Number(listing.lat || listing.latitude || 0)
+      const listingLng = Number(listing.lng || listing.longitude || listing.lon || 0)
+      
+      if (!listingLat || !listingLng) return false
+      
+      const distance = calculateDistance(
+        selectedLocation.lat,
+        selectedLocation.lng,
+        listingLat,
+        listingLng
+      )
+      
+      return distance <= searchRadius
+    })
+  }, [listings, selectedLocation, searchRadius])
+
+  // Separate filtered listings by type
+  const roomListings = useMemo(() => {
+    const filtered = filteredListings.filter(l => {
+      const listingType = (l.type || '').toLowerCase().trim()
+      return listingType === 'room' || 
+             listingType === 'stay' || 
+             listingType.includes('room') ||
+             listingType.includes('stay') ||
+             (listingType === '' && !l.type)
+    })
+    return filtered
+  }, [filteredListings])
+  
+  const foodListings = useMemo(() => {
+    return filteredListings.filter(l => {
+      const listingType = (l.type || '').toLowerCase().trim()
+      return listingType === 'food' || 
+             listingType === 'mess' || 
+             listingType === 'tiffin' ||
+             listingType.includes('food') ||
+             listingType.includes('mess') ||
+             listingType.includes('tiffin')
+    })
+  }, [filteredListings])
+
+  // map points for GoogleMapComponent - use filtered listings
+  const mapPoints = useMemo(() => {
+    return filteredListings
+      .filter(l => l.lat && l.lng)
+      .map(l => ({
+        lat: Number(l.lat || l.latitude || 0),
+        lng: Number(l.lng || l.longitude || l.lon || 0),
+        title: l.title,
+        price: l.price
+      }))
+  }, [filteredListings])
 
   return (
     <>
-      <Hero onSearch={() => { listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} />
+      <Hero 
+        onSearch={() => { listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
+        onLocationSelect={(location) => {
+          setSelectedLocation(location)
+          if (location) {
+            listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        }}
+      />
 
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <section className="fancy-card p-6">
-              <div className="flex items-center gap-4">
-                <input className="input flex-1" placeholder="Search by city, college or locality" />
-                <button className="brand-btn" title="Quick filters">
-                  <FiFilter className="mr-2 inline" /> Filters
-                </button>
-                <button onClick={() => setDrawerOpen(true)} className="px-4 py-3 border-2 rounded-xl hover:bg-white/50 transition-all hidden sm:inline">Advanced</button>
+            <section className="fancy-card p-6 unicorn-glow relative z-10">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+                <div className="flex-1 min-w-0 relative z-20">
+                  <LocationSearch 
+                    onLocationSelect={(location) => {
+                      setSelectedLocation(location)
+                      if (location) {
+                        listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }
+                    }}
+                    placeholder="Search by city, college or locality"
+                  />
+                </div>
+                <div className="flex gap-2 flex-shrink-0 relative z-10">
+                  {selectedLocation && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-emerald-100 dark:from-amber-900/30 dark:to-emerald-900/30 rounded-xl border-2 border-amber-300 dark:border-emerald-500/30">
+                      <FiMapPin className="text-amber-600 dark:text-emerald-400" />
+                      <span className="text-sm font-medium text-amber-700 dark:text-emerald-300 truncate max-w-[150px]">
+                        {selectedLocation.name || selectedLocation.address}
+                      </span>
+                      <button
+                        onClick={() => setSelectedLocation(null)}
+                        className="ml-2 text-amber-600 dark:text-emerald-400 hover:text-amber-800 dark:hover:text-emerald-200 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <button className="shadcn-button-primary" title="Quick filters">
+                    <FiFilter className="mr-2" /> Filters
+                  </button>
+                  <button 
+                    onClick={() => setDrawerOpen(true)} 
+                    className="shadcn-button-secondary hidden sm:inline-flex"
+                  >
+                    Advanced
+                  </button>
+                </div>
               </div>
+              {selectedLocation && (
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 flex-1 min-w-[200px]">
+                    <span>Search Radius:</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="50"
+                      value={searchRadius}
+                      onChange={(e) => setSearchRadius(Number(e.target.value))}
+                      className="flex-1 max-w-xs accent-amber-500 dark:accent-emerald-500"
+                    />
+                    <span className="text-amber-600 dark:text-emerald-400 font-bold">{searchRadius} km</span>
+                  </label>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {filteredListings.length} listing{filteredListings.length !== 1 ? 's' : ''} found
+                  </span>
+                </div>
+              )}
             </section>
 
-            <section className="fancy-card">
-              <GoogleMapComponent listings={mapPoints} />
+            <section className="fancy-card sparkle">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold rainbow-text">📍 Map View</h3>
+                {selectedLocation && (
+                  <span className="text-xs text-amber-600 dark:text-emerald-400 bg-amber-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full border border-amber-300 dark:border-emerald-500/30">
+                    Showing {mapPoints.length} locations
+                  </span>
+                )}
+              </div>
+              <GoogleMapComponent 
+                listings={mapPoints} 
+                center={selectedLocation ? { lat: selectedLocation.lat, lng: selectedLocation.lng } : null}
+                zoom={selectedLocation ? 13 : 12}
+              />
             </section>
 
             {/* Rooms Section */}

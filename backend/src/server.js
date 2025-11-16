@@ -21,7 +21,34 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
+
+// CORS configuration - allow Vercel frontend and localhost for development
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : ['http://localhost:5173', 'http://localhost:3000'];
+
+app.use(cors({ 
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // In development, allow all origins
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // In production, check against allowed origins
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // rate limiter
 app.use(rateLimit({ windowMs: 1000 * 30, max: 250 }));
@@ -39,6 +66,23 @@ app.use('/api/bookings', bookingRoutes);
 
 // health
 app.get('/api/health', (req, res) => res.json({ ok: true, now: new Date() }));
+
+// Serve frontend static files in production (if frontend is built and placed in backend/public)
+// This catch-all route should be LAST, after all API routes
+if (process.env.SERVE_FRONTEND === 'true') {
+  const frontendPath = path.resolve(__dirname, '..', '..', 'frontend', 'dist');
+  if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+    // Catch-all handler: send back React's index.html file for SPA routing
+    app.get('*', (req, res) => {
+      // Don't serve index.html for API routes
+      if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ message: 'API route not found' });
+      }
+      res.sendFile(path.join(frontendPath, 'index.html'));
+    });
+  }
+}
 
 // Ensure uploads directory exists
 if (!fs.existsSync(uploadsPath)) {
