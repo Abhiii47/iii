@@ -4,9 +4,7 @@ node_modules
 .env.production
 .env.development
 
-# Uploads (optional - uncomment if you don't want to commit uploaded files)
-# uploads/*
-# !uploads/.gitkeep
+.env.example
 
 # Logs
 *.log
@@ -15,5 +13,5 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
-.env.example
+
 
