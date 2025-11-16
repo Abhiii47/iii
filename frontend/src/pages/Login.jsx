@@ -12,19 +12,52 @@ export default function Login({ setUser }) {
   const navigate = useNavigate()
 
   const handleAuth = async () => {
+    // Validation
+    if (!email || !password) {
+      alert('Email and password are required');
+      return;
+    }
+    if (mode === 'register' && !name) {
+      alert('Name is required for registration');
+      return;
+    }
+    if (!email.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+
     try {
       if (mode === 'register') {
         const res = await API.post('/auth/register', { name, email, password, role })
-        const data = res.data ?? res
-        localStorage.setItem('token', data.token); localStorage.setItem('user', JSON.stringify(data.user))
-        setUser && setUser(data.user); navigate('/')
+        const data = res.data
+        if (data.token && data.user) {
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('user', JSON.stringify(data.user))
+          setUser && setUser(data.user)
+          navigate('/')
+        } else {
+          alert('Registration failed: Invalid response from server')
+        }
       } else {
         const res = await API.post('/auth/login', { email, password })
-        const data = res.data ?? res
-        localStorage.setItem('token', data.token); localStorage.setItem('user', JSON.stringify(data.user))
-        setUser && setUser(data.user); navigate('/')
+        const data = res.data
+        if (data.token && data.user) {
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('user', JSON.stringify(data.user))
+          setUser && setUser(data.user)
+          navigate('/')
+        } else {
+          alert('Login failed: Invalid response from server')
+        }
       }
-    } catch (e) { alert(e.response?.data?.message || e.message) }
+    } catch (e) { 
+      const errorMsg = e.response?.data?.message || e.message || 'An error occurred'
+      alert(errorMsg)
+    }
   }
 
   return (

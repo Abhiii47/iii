@@ -7,7 +7,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = path.resolve(process.env.UPLOAD_DIR || 'uploads');
+// Resolve upload directory relative to backend root, not src folder
+const uploadDir = process.env.UPLOAD_DIR 
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.resolve(__dirname, '..', '..', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
@@ -38,18 +41,21 @@ router.get('/provider', requireAuth, requireProvider, async (req,res) => {
 router.post('/', requireAuth, requireProvider, upload.array('images', 6), async (req,res) => {
   try {
     const body = req.body;
+    if (!body.title) return res.status(400).json({ message: 'Title is required' });
+    if (!body.lat || !body.lng) return res.status(400).json({ message: 'Latitude and longitude are required' });
+    
     const imageFiles = (req.files || []).map(f => `${process.env.BASE_URL || ''}/uploads/${path.basename(f.path)}`);
     const doc = new Listing({
       title: body.title,
       description: body.description,
       address: body.address,
-      price: body.price,
+      price: body.price ? Number(body.price) : undefined,
       images: imageFiles,
       imageUrl: imageFiles[0] || body.imageUrl,
       owner: req.user._id,
       hostName: req.user.name,
-      lat: body.lat,
-      lng: body.lng,
+      lat: Number(body.lat),
+      lng: Number(body.lng),
       type: body.type || body.category || 'room',
       tags: (body.tags && body.tags.split?.(',')) || [],
       amenities: (body.amenities && body.amenities.split?.(',')) || []
@@ -88,7 +94,7 @@ router.delete('/:id', requireAuth, requireProvider, async (req,res) => {
     const listing = await Listing.findById(req.params.id);
     if (!listing) return res.status(404).json({ message: 'Not found' });
     if (!listing.owner.equals(req.user._id) && req.user.role !== 'admin') return res.status(403).json({ message: 'Not allowed' });
-    await listing.remove();
+    await Listing.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });

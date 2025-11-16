@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
+import Listings from './pages/Listings'
 import CreateListing from './pages/CreateListing'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
@@ -27,11 +28,12 @@ export default function App(){
 
   // pass user and logout handler into Navbar
   return (
-    <div className="min-h-screen bg-[rgb(248,250,252)]">
+    <div className="min-h-screen relative">
       <Navbar user={user} onLogout={handleLogout} />
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8 relative z-10">
         <Routes>
           <Route path="/" element={<Home user={user} />} />
+          <Route path="/listings" element={<Listings user={user} />} />
           <Route path="/create" element={<CreateListing user={user} />} />
           <Route path="/dashboard" element={<Dashboard user={user} />} />
           <Route path="/login" element={<Login setUser={(u)=>{ localStorage.setItem('user', JSON.stringify(u)); setUser(u)}} />} />

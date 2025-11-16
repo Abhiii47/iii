@@ -22,6 +22,16 @@ router.post('/', requireAuth, async (req,res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// get user's own bookings (authenticated users)
+router.get('/user', requireAuth, async (req,res) => {
+  try {
+    const bookings = await Booking.find({ user: req.user._id })
+      .populate('listing', 'title address price images imageUrl type')
+      .sort({ createdAt: -1 });
+    res.json(bookings);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // provider: list booking requests (provider sees bookings for their listings)
 router.get('/requests', requireAuth, requireProvider, async (req,res) => {
   try {

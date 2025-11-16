@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+const fs = require('fs');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -25,8 +26,11 @@ app.use(cors({ origin: true, credentials: true }));
 // rate limiter
 app.use(rateLimit({ windowMs: 1000 * 30, max: 250 }));
 
-// serve uploads
-app.use('/uploads', express.static(path.resolve(__dirname, process.env.UPLOAD_DIR || 'uploads')));
+// serve uploads - resolve path relative to backend root, not src folder
+const uploadsPath = process.env.UPLOAD_DIR 
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.resolve(__dirname, '..', 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // routes
 app.use('/api/auth', authRoutes);
@@ -36,11 +40,38 @@ app.use('/api/bookings', bookingRoutes);
 // health
 app.get('/api/health', (req, res) => res.json({ ok: true, now: new Date() }));
 
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+  console.log(`Created uploads directory at: ${uploadsPath}`);
+}
+
 // connect mongo + start
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+  console.error('❌ Error: MONGO_URI not found in environment variables');
+  console.error('Please create a .env file with MONGO_URI');
+  process.exit(1);
+}
+
+mongoose.connect(mongoUri, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
   .then(()=> {
-    console.log('Mongo connected');
-    app.listen(PORT, ()=> console.log(`Server listening on ${PORT}`));
+    console.log('✅ MongoDB connected successfully');
+    app.listen(PORT, ()=> {
+      console.log(`🚀 Server listening on http://localhost:${PORT}`);
+      console.log(`📁 Uploads directory: ${uploadsPath}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+    });
   })
-  .catch(err => { console.error('Mongo connection failed', err); process.exit(1) });
+  .catch(err => { 
+    console.error('❌ MongoDB connection failed:', err.message);
+    console.error('Please check:');
+    console.error('  1. MONGO_URI in .env file is correct');
+    console.error('  2. MongoDB connection string includes database name');
+    console.error('  3. Network allows connection to MongoDB');
+    process.exit(1); 
+  });
 

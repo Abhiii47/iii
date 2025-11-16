@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 
 export default function Hero({ onSearch=()=>{} }){
   return (
-    <section className="hero-wrapper relative rounded-2xl p-10 mb-10 bg-gradient-to-b from-white to-[#f6f9ff] overflow-hidden">
+    <section className="hero-wrapper relative rounded-3xl p-10 mb-10 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 overflow-hidden border-2 border-purple-200/30 shadow-2xl">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         <div>
-          <motion.h1 className="text-4xl font-extrabold leading-snug" initial={{opacity:0, y:6}} animate={{opacity:1, y:0}} transition={{delay:0.05}}>
-            Find comfortable stays & tasty meals nearby
+          <motion.h1 className="text-5xl font-extrabold leading-snug rainbow-text" initial={{opacity:0, y:6}} animate={{opacity:1, y:0}} transition={{delay:0.05}}>
+            ✨ Find comfortable stays & tasty meals nearby
           </motion.h1>
           <motion.p className="text-slate-600 mt-3" initial={{opacity:0, y:6}} animate={{opacity:1, y:0}} transition={{delay:0.12}}>
             Fast search, map view and provider dashboard — made for students and working professionals.

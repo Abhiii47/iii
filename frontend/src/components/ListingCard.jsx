@@ -28,7 +28,12 @@ export default function ListingCard({ listing={}, onBook=()=>{} }){
             onClick={()=>setPreviewOpen(true)}
             style={{ cursor:'pointer', display: imgLoaded ? 'block' : 'none' }}
             onLoad={()=>setImgLoaded(true)}
-            onError={(e)=>{ e.currentTarget.onerror = null; e.currentTarget.src = 'https://via.placeholder.com/800x600?text=No+Image' ; setImgLoaded(true)}}
+            onError={(e)=>{ 
+              e.currentTarget.onerror = null; 
+              // Use a data URL as fallback instead of external placeholder service
+              e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e2e8f0" width="800" height="600"/%3E%3Ctext fill="%2394a3b8" font-family="sans-serif" font-size="24" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
+              setImgLoaded(true);
+            }}
           />
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay: 0.08 }} className="price-badge">₹{listing.price ?? "—"}</motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay: 0.12 }} className="rating-badge">⭐ {listing.rating ?? "4.6"}</motion.div>

@@ -3,7 +3,8 @@ import React, { useState } from "react";
 
 export default function CreateListingModal({ open=false, onClose=()=>{}, onCreated=()=>{} }){
   const [title,setTitle] = useState(''); const [price,setPrice] = useState(''); const [address,setAddress]=useState('');
-  const [lat,setLat]=useState(''); const [lng,setLng]=useState(''); const [file,setFile]=useState(null); const [preview,setPreview]=useState(null); const [loading,setLoading]=useState(false);
+  const [type,setType] = useState('room'); const [lat,setLat]=useState(''); const [lng,setLng]=useState(''); 
+  const [file,setFile]=useState(null); const [preview,setPreview]=useState(null); const [loading,setLoading]=useState(false);
 
   const handleFile = e => {
     const f = e.target.files?.[0]; if(!f) return; setFile(f);
@@ -11,17 +12,45 @@ export default function CreateListingModal({ open=false, onClose=()=>{}, onCreat
   };
 
   const submit = async ()=> {
+    if (!title || !lat || !lng) {
+      alert('Please fill in title, latitude, and longitude');
+      return;
+    }
     setLoading(true);
     try{
-      const form = new FormData(); form.append('title', title); form.append('price', price); form.append('address', address); form.append('lat', lat); form.append('lng', lng);
-      if(file) form.append('image', file);
+      const form = new FormData(); 
+      form.append('title', title); 
+      if (price) form.append('price', price); 
+      form.append('address', address); 
+      form.append('type', type); // Explicitly set type
+      form.append('lat', lat); 
+      form.append('lng', lng);
+      // Use 'images' field name to match backend expectation
+      if(file) form.append('images', file);
       const token = localStorage.getItem('token');
-      const res = await fetch((import.meta.env.VITE_API_URL||'/api') + '/listings', { method:'POST', headers: token ? { Authorization: `Bearer ${token}` } : undefined, body:form });
-      if(!res.ok) throw new Error(await res.text());
+      const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(baseURL + '/listings', { 
+        method:'POST', 
+        headers: token ? { Authorization: `Bearer ${token}` } : {}, 
+        body:form 
+      });
+      if(!res.ok) {
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch {
+          const text = await res.text();
+          errorData = { message: text };
+        }
+        throw new Error(errorData.message || `Failed: ${res.status} ${res.statusText}`);
+      }
       const data = await res.json();
-      onCreated(data); onClose();
-      setTitle(''); setPrice(''); setAddress(''); setFile(null); setPreview(null); setLat(''); setLng('');
-    }catch(e){ alert(e.message||e) } finally { setLoading(false) }
+      onCreated(data); 
+      onClose();
+      setTitle(''); setPrice(''); setAddress(''); setType('room'); setFile(null); setPreview(null); setLat(''); setLng('');
+    }catch(e){ 
+      alert(e.message || e || 'Failed to create listing');
+    } finally { setLoading(false) }
   };
 
   if(!open) return null;
@@ -33,6 +62,35 @@ export default function CreateListingModal({ open=false, onClose=()=>{}, onCreat
         <div className="grid gap-3">
           <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Title" className="input" />
           <input value={address} onChange={e=>setAddress(e.target.value)} placeholder="Address" className="input" />
+          
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-2 block">Listing Type *</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setType('room')}
+                className={`px-3 py-2 rounded-lg font-medium transition-all text-sm border-2 ${
+                  type === 'room'
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent shadow-md'
+                    : 'bg-white border-slate-200 text-slate-700 hover:border-purple-300'
+                }`}
+              >
+                🏠 Room
+              </button>
+              <button
+                type="button"
+                onClick={() => setType('food')}
+                className={`px-3 py-2 rounded-lg font-medium transition-all text-sm border-2 ${
+                  type === 'food'
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-transparent shadow-md'
+                    : 'bg-white border-slate-200 text-slate-700 hover:border-purple-300'
+                }`}
+              >
+                🍽️ Food
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <input value={lat} onChange={e=>setLat(e.target.value)} placeholder="Latitude" className="input" />
             <input value={lng} onChange={e=>setLng(e.target.value)} placeholder="Longitude" className="input" />

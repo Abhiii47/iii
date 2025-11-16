@@ -17,30 +17,54 @@ export default function Dashboard({ user }) {
   useEffect(()=> {
     let mounted = true;
     (async ()=> {
-      try {
-        // try API endpoint for provider's listings
-        const res = await API.get("/listings/provider"); // adjust endpoint if your API differs
-        if (mounted) setMyListings(res.data ?? res);
-      } catch (e) {
-        // fallback: load all and filter by owner if user present
+      // Only fetch provider data if user is a provider
+      const isProvider = user?.role === 'provider' || user?.role === 'admin';
+      
+      if (isProvider) {
         try {
-          const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-          const r = await fetch(base + "/listings");
-          if (r.ok) {
-            const all = await r.json();
-            if (mounted) {
-              if (user?.id || user?._id) {
-                setMyListings(all.filter(l => (l.owner === user.id) || (l.owner === user._id) || (l.hostId === user.id)));
-              } else setMyListings(all);
+          // try API endpoint for provider's listings
+          const res = await API.get("/listings/provider");
+          if (mounted) setMyListings(res.data ?? res);
+        } catch (e) {
+          // fallback: load all and filter by owner if user present
+          try {
+            const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            const r = await fetch(base + "/listings");
+            if (r.ok) {
+              const all = await r.json();
+              if (mounted) {
+                const userId = user?.id || user?._id;
+                if (userId) {
+                  setMyListings(all.filter(l => {
+                    const ownerId = l.owner?._id || l.owner || l.hostId;
+                    return ownerId?.toString() === userId?.toString();
+                  }));
+                } else {
+                  setMyListings([]);
+                }
+              }
             }
+          } catch (err) {
+            console.error('Failed to load listings:', err);
+            if (mounted) setMyListings([]);
           }
-        } catch {}
-      }
+        }
 
-      try {
-        const rr = await API.get("/bookings/requests");
-        if (rr?.data) setRequests(rr.data);
-      } catch {}
+        try {
+          const rr = await API.get("/bookings/requests");
+          if (rr?.data && mounted) setRequests(rr.data);
+        } catch (e) {
+          console.error('Failed to load booking requests:', e);
+          if (mounted) setRequests([]);
+        }
+      } else {
+        // For non-providers, show message or filter their own listings if any
+        if (mounted) {
+          setMyListings([]);
+          setRequests([]);
+        }
+      }
+      
       if (mounted) setLoading(false);
     })();
     return ()=> mounted = false;
@@ -62,6 +86,31 @@ export default function Dashboard({ user }) {
     setMyListings(prev => [newItem, ...prev]);
     toast.push("Listing created", { type: "success" });
   };
+
+  const isProvider = user?.role === 'provider' || user?.role === 'admin';
+
+  if (!user) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+          <h2 className="text-xl font-semibold mb-2">Please sign in to access the dashboard</h2>
+          <p className="text-slate-500">You need to be logged in to view your dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isProvider) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+          <h2 className="text-xl font-semibold mb-2">Provider Access Required</h2>
+          <p className="text-slate-500 mb-4">This dashboard is only available for providers.</p>
+          <p className="text-sm text-slate-400">If you're a provider, please contact support or register with a provider account.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
