@@ -120,53 +120,53 @@ export default function Listings({ user }) {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
         {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold rainbow-text mb-4">Browse Listings</h1>
-          <p className="text-slate-600">Find the perfect room or food service for your needs</p>
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold rainbow-text mb-2 sm:mb-4">Browse Listings</h1>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">Find the perfect room or food service for your needs</p>
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="fancy-card p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="fancy-card p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <div className="flex-1 relative">
-              <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              <FiSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 z-10 pointer-events-none" />
               <input
                 type="text"
-                className="input w-full pl-12"
+                className="input w-full pl-10 sm:pl-12 text-sm sm:text-base"
                 placeholder="Search by title, address, or description..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedType('all')}
-                className={`px-5 py-3 rounded-xl font-medium transition-all ${
+                className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-xl font-medium transition-all text-xs sm:text-sm ${
                   selectedType === 'all'
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                    : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-purple-300'
+                    ? 'shadcn-button-primary'
+                    : 'shadcn-button-secondary'
                 }`}
               >
                 All ({listings.length})
               </button>
               <button
                 onClick={() => setSelectedType('room')}
-                className={`px-5 py-3 rounded-xl font-medium transition-all ${
+                className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-xl font-medium transition-all text-xs sm:text-sm ${
                   selectedType === 'room'
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                    : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-purple-300'
+                    ? 'shadcn-button-primary'
+                    : 'shadcn-button-secondary'
                 }`}
               >
                 🏠 Rooms ({roomListings.length})
               </button>
               <button
                 onClick={() => setSelectedType('food')}
-                className={`px-5 py-3 rounded-xl font-medium transition-all ${
+                className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-xl font-medium transition-all text-xs sm:text-sm ${
                   selectedType === 'food'
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                    : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-purple-300'
+                    ? 'shadcn-button-primary'
+                    : 'shadcn-button-secondary'
                 }`}
               >
                 🍽️ Food ({foodListings.length})
@@ -177,7 +177,7 @@ export default function Listings({ user }) {
 
         {/* Listings Display */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {Array.from({ length: 9 }).map((_, i) => (<SkeletonCard key={i} />))}
           </div>
         ) : (
@@ -187,14 +187,14 @@ export default function Listings({ user }) {
               <>
                 {/* Rooms Section */}
                 {displayedRoomListings.length > 0 && (
-                  <section className="mb-12">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold rainbow-text">🏠 Rooms & Stays</h2>
-                      <span className="text-sm text-slate-600 bg-white/80 px-4 py-2 rounded-full border">
+                  <section className="mb-8 sm:mb-12">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 sm:mb-6">
+                      <h2 className="text-xl sm:text-2xl font-bold rainbow-text">🏠 Rooms & Stays</h2>
+                      <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-slate-700/80 px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-amber-200 dark:border-emerald-500/30">
                         {displayedRoomListings.length} available
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {displayedRoomListings.map(l => (
                         <div key={l._id || l.id} className="relative group">
                           <Link to={`/listing/${l._id || l.id}`} className="block">
@@ -221,13 +221,13 @@ export default function Listings({ user }) {
                 {/* Food Section */}
                 {displayedFoodListings.length > 0 && (
                   <section>
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold rainbow-text">🍽️ Food & Mess Services</h2>
-                      <span className="text-sm text-slate-600 bg-white/80 px-4 py-2 rounded-full border">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 sm:mb-6">
+                      <h2 className="text-xl sm:text-2xl font-bold rainbow-text">🍽️ Food & Mess Services</h2>
+                      <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-slate-700/80 px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-amber-200 dark:border-emerald-500/30">
                         {displayedFoodListings.length} available
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {displayedFoodListings.map(l => (
                         <div key={l._id || l.id} className="relative group">
                           <Link to={`/listing/${l._id || l.id}`} className="block">
@@ -253,11 +253,11 @@ export default function Listings({ user }) {
               </>
             ) : (
               /* Show filtered results in single grid */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredListings.length === 0 ? (
-                  <div className="col-span-full text-center py-16">
-                    <p className="text-xl text-slate-500 mb-2">No listings found</p>
-                    <p className="text-sm text-slate-400">
+                  <div className="col-span-full text-center py-12 sm:py-16">
+                    <p className="text-lg sm:text-xl text-slate-500 dark:text-slate-400 mb-2">No listings found</p>
+                    <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500">
                       {searchQuery ? 'Try adjusting your search' : 'No listings available yet'}
                     </p>
                   </div>

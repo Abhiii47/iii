@@ -13,7 +13,7 @@ export default function FilterDrawer({ open=false, onClose=()=>{}, onApply=()=>{
             animate={{x:0}} 
             exit={{x:'100%'}} 
             transition={{type:'spring', damping: 25, stiffness: 200}} 
-            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white dark:bg-slate-800 z-50 shadow-2xl p-6 overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white dark:bg-slate-800 z-50 shadow-2xl p-4 sm:p-6 overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
               <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100">Filters</h4>

@@ -147,11 +147,11 @@ export default function Home({ user }) {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <section className="fancy-card p-6 unicorn-glow relative z-10">
-              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <section className="fancy-card p-4 sm:p-6 unicorn-glow relative z-10">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="flex-1 min-w-0 relative z-20">
                   <LocationSearch 
                     onLocationSelect={(location) => {
@@ -163,58 +163,61 @@ export default function Home({ user }) {
                     placeholder="Search by city, college or locality"
                   />
                 </div>
-                <div className="flex gap-2 flex-shrink-0 relative z-10">
+                <div className="flex flex-wrap gap-2 flex-shrink-0 relative z-10">
                   {selectedLocation && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-emerald-100 dark:from-amber-900/30 dark:to-emerald-900/30 rounded-xl border-2 border-amber-300 dark:border-emerald-500/30">
-                      <FiMapPin className="text-amber-600 dark:text-emerald-400" />
-                      <span className="text-sm font-medium text-amber-700 dark:text-emerald-300 truncate max-w-[150px]">
+                    <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-100 to-emerald-100 dark:from-amber-900/30 dark:to-emerald-900/30 rounded-xl border-2 border-amber-300 dark:border-emerald-500/30 w-full sm:w-auto">
+                      <FiMapPin className="text-amber-600 dark:text-emerald-400 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium text-amber-700 dark:text-emerald-300 truncate flex-1 min-w-0">
                         {selectedLocation.name || selectedLocation.address}
                       </span>
                       <button
                         onClick={() => setSelectedLocation(null)}
-                        className="ml-2 text-amber-600 dark:text-emerald-400 hover:text-amber-800 dark:hover:text-emerald-200 transition-colors"
+                        className="ml-2 text-amber-600 dark:text-emerald-400 hover:text-amber-800 dark:hover:text-emerald-200 transition-colors flex-shrink-0 text-lg"
+                        aria-label="Clear location"
                       >
                         ×
                       </button>
                     </div>
                   )}
-                  <button className="shadcn-button-primary" title="Quick filters">
-                    <FiFilter className="mr-2" /> Filters
+                  <button className="shadcn-button-primary text-xs sm:text-sm px-3 sm:px-4 py-2 flex-1 sm:flex-initial" title="Quick filters">
+                    <FiFilter className="mr-1 sm:mr-2" /> <span className="hidden xs:inline">Filters</span><span className="xs:hidden">Filter</span>
                   </button>
                   <button 
                     onClick={() => setDrawerOpen(true)} 
-                    className="shadcn-button-secondary hidden sm:inline-flex"
+                    className="shadcn-button-secondary text-xs sm:text-sm px-3 sm:px-4 py-2"
                   >
                     Advanced
                   </button>
                 </div>
               </div>
               {selectedLocation && (
-                <div className="mt-4 flex flex-wrap items-center gap-4">
-                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 flex-1 min-w-[200px]">
-                    <span>Search Radius:</span>
-                    <input
-                      type="range"
-                      min="1"
-                      max="50"
-                      value={searchRadius}
-                      onChange={(e) => setSearchRadius(Number(e.target.value))}
-                      className="flex-1 max-w-xs accent-amber-500 dark:accent-emerald-500"
-                    />
-                    <span className="text-amber-600 dark:text-emerald-400 font-bold">{searchRadius} km</span>
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+                  <label className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-1 min-w-0">
+                    <span className="whitespace-nowrap">Search Radius:</span>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <input
+                        type="range"
+                        min="1"
+                        max="50"
+                        value={searchRadius}
+                        onChange={(e) => setSearchRadius(Number(e.target.value))}
+                        className="flex-1 sm:max-w-xs accent-amber-500 dark:accent-emerald-500"
+                      />
+                      <span className="text-amber-600 dark:text-emerald-400 font-bold text-xs sm:text-sm whitespace-nowrap">{searchRadius} km</span>
+                    </div>
                   </label>
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                  <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
                     {filteredListings.length} listing{filteredListings.length !== 1 ? 's' : ''} found
                   </span>
                 </div>
               )}
             </section>
 
-            <section className="fancy-card sparkle">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold rainbow-text">📍 Map View</h3>
+            <section className="fancy-card sparkle p-4 sm:p-6">
+              <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <h3 className="text-base sm:text-lg font-bold rainbow-text">📍 Map View</h3>
                 {selectedLocation && (
-                  <span className="text-xs text-amber-600 dark:text-emerald-400 bg-amber-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full border border-amber-300 dark:border-emerald-500/30">
+                  <span className="text-xs text-amber-600 dark:text-emerald-400 bg-amber-100 dark:bg-emerald-900/30 px-2 sm:px-3 py-1 rounded-full border border-amber-300 dark:border-emerald-500/30 whitespace-nowrap">
                     Showing {mapPoints.length} locations
                   </span>
                 )}
@@ -227,14 +230,14 @@ export default function Home({ user }) {
             </section>
 
             {/* Rooms Section */}
-            <section ref={listingsRef} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold rainbow-text">🏠 Rooms & Stays</h2>
-                <span className="text-sm text-slate-600 bg-white/80 px-3 py-1 rounded-full border">
+            <section ref={listingsRef} className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold rainbow-text">🏠 Rooms & Stays</h2>
+                <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-slate-700/80 px-2 sm:px-3 py-1 rounded-full border border-amber-200 dark:border-emerald-500/30">
                   {roomListings.length} available
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {loading
                   ? Array.from({ length: 6 }).map((_, i) => (<SkeletonCard key={i} />))
                   : (roomListings.length === 0
@@ -267,14 +270,14 @@ export default function Home({ user }) {
             </section>
 
             {/* Food Section */}
-            <section className="space-y-4 mt-12">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold rainbow-text">🍽️ Food & Mess Services</h2>
-                <span className="text-sm text-slate-600 bg-white/80 px-3 py-1 rounded-full border">
+            <section className="space-y-3 sm:space-y-4 mt-8 sm:mt-12">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold rainbow-text">🍽️ Food & Mess Services</h2>
+                <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-slate-700/80 px-2 sm:px-3 py-1 rounded-full border border-amber-200 dark:border-emerald-500/30">
                   {foodListings.length} available
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {loading
                   ? Array.from({ length: 3 }).map((_, i) => (<SkeletonCard key={`food-${i}`} />))
                   : (foodListings.length === 0
@@ -307,30 +310,30 @@ export default function Home({ user }) {
             </section>
           </div>
 
-          <aside className="space-y-6">
-            <div className="fancy-card p-6">
-              <h4 className="font-bold text-lg mb-4 rainbow-text">Quick View</h4>
-              <div className="space-y-4">
+          <aside className="space-y-4 sm:space-y-6 hidden lg:block">
+            <div className="fancy-card p-4 sm:p-6">
+              <h4 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 rainbow-text">Quick View</h4>
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <div className="text-xs text-slate-500 mb-2 uppercase tracking-wide">Rooms</div>
-                  <div className="text-2xl font-bold text-purple-600">{roomListings.length}</div>
-                  <div className="text-xs text-slate-400 mt-1">Available stays</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Rooms</div>
+                  <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">{roomListings.length}</div>
+                  <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">Available stays</div>
                 </div>
-                <div className="border-t border-purple-200/50 pt-4">
-                  <div className="text-xs text-slate-500 mb-2 uppercase tracking-wide">Food Services</div>
-                  <div className="text-2xl font-bold text-blue-600">{foodListings.length}</div>
-                  <div className="text-xs text-slate-400 mt-1">Mess & tiffin</div>
+                <div className="border-t border-amber-200/50 dark:border-emerald-500/30 pt-3 sm:pt-4">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Food Services</div>
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">{foodListings.length}</div>
+                  <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">Mess & tiffin</div>
                 </div>
               </div>
             </div>
 
-            <div className="fancy-card p-6">
-              <h4 className="font-bold mb-4">Recently Added</h4>
-              <ul className="space-y-3">
+            <div className="fancy-card p-4 sm:p-6">
+              <h4 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-slate-800 dark:text-slate-100">Recently Added</h4>
+              <ul className="space-y-2 sm:space-y-3">
                 {listings.slice(0, 5).map(l => (
                   <li key={l._id || l.id}>
-                    <Link to={`/listing/${l._id || l.id}`} className="flex items-center gap-3 hover:bg-white/50 p-2 rounded-lg transition-all">
-                      <div className="w-16 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <Link to={`/listing/${l._id || l.id}`} className="flex items-center gap-2 sm:gap-3 hover:bg-white/50 dark:hover:bg-slate-700/50 p-2 rounded-lg transition-all">
+                      <div className="w-12 sm:w-16 h-10 sm:h-12 bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden flex-shrink-0">
                         {l.imageUrl ? (
                           <img 
                             src={(import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:5000') + l.imageUrl} 
@@ -338,13 +341,13 @@ export default function Home({ user }) {
                             className="w-full h-full object-cover" 
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-200 to-blue-200"></div>
+                          <div className="w-full h-full bg-gradient-to-br from-amber-200 to-emerald-200 dark:from-amber-800 dark:to-emerald-800"></div>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium truncate">{l.title}</div>
-                        <div className="text-xs text-slate-500">₹{l.price || 'N/A'}</div>
-                        <div className="text-xs text-purple-600 mt-1">
+                        <div className="text-xs sm:text-sm font-medium truncate text-slate-800 dark:text-slate-200">{l.title}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">₹{l.price || 'N/A'}</div>
+                        <div className="text-xs text-amber-600 dark:text-emerald-400 mt-1">
                           {l.type === 'food' || l.type?.toLowerCase().includes('food') ? '🍽️ Food' : '🏠 Room'}
                         </div>
                       </div>
@@ -355,10 +358,10 @@ export default function Home({ user }) {
             </div>
 
             {!user && (
-              <div className="fancy-card p-6 text-center">
-                <h4 className="font-bold mb-2">Ready to book?</h4>
-                <p className="text-sm text-slate-600 mb-4">Sign in to start booking rooms and food services</p>
-                <Link to="/login" className="brand-btn inline-block">
+              <div className="fancy-card p-4 sm:p-6 text-center">
+                <h4 className="font-bold text-base sm:text-lg mb-2 text-slate-800 dark:text-slate-100">Ready to book?</h4>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 sm:mb-4">Sign in to start booking rooms and food services</p>
+                <Link to="/login" className="brand-btn inline-block text-xs sm:text-sm px-4 sm:px-5 py-2">
                   Sign In
                 </Link>
               </div>

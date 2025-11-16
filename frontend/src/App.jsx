@@ -30,7 +30,7 @@ export default function App(){
   return (
     <div className="min-h-screen relative overflow-x-hidden">
       <Navbar user={user} onLogout={handleLogout} />
-      <main className="max-w-7xl mx-auto px-6 py-8 relative z-10 scroll-smooth">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 relative z-10 scroll-smooth">
         <Routes>
           <Route path="/" element={<Home user={user} />} />
           <Route path="/listings" element={<Listings user={user} />} />
